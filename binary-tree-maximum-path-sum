@@ -1,37 +1,35 @@
 https://leetcode.com/problems/binary-tree-maximum-path-sum/description/
 
-/**
- * Definition for a binary tree node.
- * struct TreeNode {
- *     int val;
- *     TreeNode *left;
- *     TreeNode *right;
- *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
- *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
- *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
- * };
- */
+# ================= OPTIMIZED DFS APPROACH (O(N)) =================
+# 1) Do a single DFS traversal of the tree.
+# 2) For each node, compute the maximum downward path sum.
+# 3) Ignore negative contributions from left/right subtrees.
+# 4) At each node, consider it as the highest point of a path.
+# 5) Update a global maximum with (left + node + right).
+# 6) Return the best downward path to parent.
+# 7) Final global maximum is the answer.
+
+# ================= DFS CODE WITH LINE-BY-LINE COMMENTS =================
+
 class Solution {
 public:
-    int pathMax(TreeNode* root){
-        if(root==NULL)return INT_MIN;
-        int leftSum = 0, rightSum=0;
-        if(root->left)leftSum = pathMax(root->left);
-        if(root->right)rightSum=pathMax(root->right);
-        return max(root->val,root->val + max(leftSum,rightSum)); 
+    int maxSum = INT_MIN;                            // stores global maximum path sum
+
+    int dfs(TreeNode* root) {                        // DFS returns max downward path
+        if(root == NULL) return 0;                   // null node contributes 0
+
+        int left = max(0, dfs(root->left));          // max path from left child (ignore negative)
+        int right = max(0, dfs(root->right));        // max path from right child (ignore negative)
+
+        int curPath = root->val + left + right;      // max path passing through current node
+        maxSum = max(maxSum, curPath);               // update global maximum
+
+        return root->val + max(left, right);         // return best downward path to parent
     }
-    int solve(TreeNode* root){
-        if(root == NULL)return INT_MIN;
-        int leftSum = 0, rightSum=0;
-        if(root->left)leftSum = pathMax(root->left);
-        if(root->right)rightSum=pathMax(root->right);
-        int cur = max(root->val + max(leftSum,rightSum),root->val + leftSum + rightSum);
-        cur=max(cur,root->val);
-        cout<<root->val<<" ;; "<<cur <<" ls:"<<leftSum<<" rs:"<<rightSum<<endl;
-        return max(cur,max(solve(root->left),solve(root->right)) ); 
-    }
-    int maxPathSum(TreeNode* root) {
-        if(root==NULL)return 0;
-        return solve(root);
+
+    int maxPathSum(TreeNode* root) {                 // main function
+        dfs(root);                                   // start DFS
+        return maxSum;                               // return final answer
     }
 };
+
