@@ -4,86 +4,125 @@ Recursive approach : Easy
 Using Two Stack : Medium
 Using one stack : difficult
 
+# =========================
+# POSTORDER TRAVERSAL
+# Left → Right → Root
+# =========================
+
 /* A binary tree node has data, pointer to left child
    and a pointer to right child
 struct Node
 {
-    int data;
-    struct Node* left;
-    struct Node* right;
+    int data;                 // stores value of node
+    struct Node* left;        // pointer to left child
+    struct Node* right;       // pointer to right child
 }; */
+
 class Solution {
   public:
-    // Function to return a list containing the postorder traversal of the tree.
-    void postOrderTraversal(Node* root,vector<int>& ans){
-        if(root==NULL)return;
+    # -------------------------------------------------
+    # Recursive Approach (Easy)
+    # Algorithm (5–6 lines):
+    # 1. If the current node is NULL, return.
+    # 2. Recursively traverse the left subtree.
+    # 3. Recursively traverse the right subtree.
+    # 4. After left and right are done, store current node.
+    # 5. This naturally follows Left → Right → Root order.
+    # -------------------------------------------------
+    void postOrderTraversal(Node* root, vector<int>& ans){
+        if(root == NULL) return;                 // base case: empty node
         
-        postOrderTraversal(root->left,ans);
-        postOrderTraversal(root->right,ans);
-        ans.push_back(root->data);
+        postOrderTraversal(root->left, ans);     // traverse left subtree
+        postOrderTraversal(root->right, ans);    // traverse right subtree
+        ans.push_back(root->data);               // process root after children
     }
-    void twoStack(Node* root,vector<int>& ans){
-        if(root==NULL)return;
-        stack<Node*> s1,s2;
-        s1.push(root);
-        while(!s1.empty()){
-            //take one out and put in second stack
-            auto top = s1.top(); s1.pop();
-            s2.push(top);
+
+    # -------------------------------------------------
+    # Two Stack Approach (Medium)
+    # Algorithm (5–6 lines):
+    # 1. Push root into first stack.
+    # 2. Pop from stack1 and push into stack2.
+    # 3. Push left and right children into stack1.
+    # 4. This reverses the traversal order.
+    # 5. Pop all nodes from stack2 to get postorder.
+    # -------------------------------------------------
+    void twoStack(Node* root, vector<int>& ans){
+        if(root == NULL) return;                 // handle empty tree
+        
+        stack<Node*> s1, s2;                     // two stacks for traversal
+        s1.push(root);                           // push root to first stack
+        
+        while(!s1.empty()){                      // while nodes exist in s1
+            auto top = s1.top();                 // get top node
+            s1.pop();                            // remove from s1
+            s2.push(top);                        // push node to s2
             
-            //check for left -> left goes in s1 first
-            // then right goes in s1. so first right will be
-            //processed and goes in s2 then left 
-            //hence in s2 if we see from top 
-            //first we see left then right then centre
-            if(top->left)s1.push(top->left); 
+            if(top->left)                        // if left child exists
+                s1.push(top->left);              // push left to s1
             
-            if(top->right)s1.push(top->right); 
+            if(top->right)                       // if right child exists
+                s1.push(top->right);             // push right to s1
         }
-        while(!s2.empty()){
-            ans.push_back(s2.top()->data);
-            s2.pop();
+        
+        while(!s2.empty()){                      // process second stack
+            ans.push_back(s2.top()->data);       // add node data to answer
+            s2.pop();                            // remove processed node
         }
     }
-void oneStack(Node* root,vector<int>& ans){
-        if(root==NULL)return;
-        stack<Node*> st;
-        Node* cur = root;
-        while(true){
-            if(cur!=NULL){
-                st.push(cur);
-                cur=cur->left;
+
+    # -------------------------------------------------
+    # One Stack Approach (Difficult)
+    # Algorithm (5–6 lines):
+    # 1. Traverse left subtree pushing nodes to stack.
+    # 2. Check right subtree of stack top.
+    # 3. If right is NULL, process the node.
+    # 4. Pop nodes while coming back from right subtree.
+    # 5. Ensures Left → Right → Root without recursion.
+    # -------------------------------------------------
+    void oneStack(Node* root, vector<int>& ans){
+        if(root == NULL) return;                 // handle empty tree
+        
+        stack<Node*> st;                         // stack to simulate recursion
+        Node* cur = root;                        // start from root
+        
+        while(true){                             // infinite loop, breaks manually
+            if(cur != NULL){                     // if current node exists
+                st.push(cur);                    // push node to stack
+                cur = cur->left;                 // move to left child
             }
-            else{
-                Node* temp = st.top()->right;
-                if(temp==NULL){
-                    //I am at such an element whos left and right both are null
-                    temp = st.top();//going at that element
-                    st.pop();
-                    ans.push_back(temp->data);
-                    //we have 2 case
-                    //if i am left element of a tree, i need to 
-                    //go to the right side, If i am on right side,
-                    // i need to go to base
-                    while(st.empty()==false && temp == st.top()->right) {
-                        //in this case, add me in ans
-                        temp = st.top(); st.pop();
-                        ans.push_back(temp->data);
+            else{                                // when left subtree is done
+                Node* temp = st.top()->right;    // check right subtree
+                
+                if(temp == NULL){                // if right subtree doesn't exist
+                    temp = st.top();             // get top node
+                    st.pop();                    // remove it from stack
+                    ans.push_back(temp->data);   // process node
+                    
+                    while(!st.empty() && temp == st.top()->right){
+                        temp = st.top();         // move up the tree
+                        st.pop();                // pop parent node
+                        ans.push_back(temp->data); // process parent
                     }
                 }
                 else{
-                    cur = temp; //cur is NULL and st.top()->right exists
+                    cur = temp;                  // move to right subtree
                 }
             }
-            if(st.empty())break;
+            if(st.empty()) break;                // exit when stack is empty
         }
     }
+
+    # -------------------------------------------------
+    # Driver Function
+    # -------------------------------------------------
     vector<int> postOrder(Node* root) {
-        vector<int> ans;
-        //postOrderTraversal(root,ans);
-        //twoStack(root,ans);
-        oneStack(root,ans);
-        return ans;
+        vector<int> ans;                         // stores traversal result
+        
+        // postOrderTraversal(root, ans);        // recursive approach
+        // twoStack(root, ans);                  // two stack approach
+        oneStack(root, ans);                     // one stack approach
+        
+        return ans;                              // return postorder traversal
     }
 };
 
@@ -95,6 +134,133 @@ void oneStack(Node* root,vector<int>& ans){
 
 
 
+
+# ============================================================
+# ONE STACK POSTORDER TRAVERSAL – LINE BY LINE EXPLANATION
+# Tree used for dry run:
+#
+#        1
+#       / \
+#      3   2
+#     /
+#    5
+#
+# Expected Postorder: 5 3 2 1
+# ============================================================
+
+while(true){                             # Run loop until we explicitly break
+
+    if(cur != NULL){                     # Case 1: current node exists
+        st.push(cur);                    # Push current node to stack
+        cur = cur->left;                 # Move to left child (go as left as possible)
+    }
+
+    else{                                # Case 2: left subtree is finished
+        Node* temp = st.top()->right;    # Look at right child of stack's top
+
+        if(temp == NULL){                # If right subtree DOES NOT exist
+            temp = st.top();             # Store node to be processed
+            st.pop();                    # Remove node from stack
+            ans.push_back(temp->data);   # Add node to postorder result
+
+            # Now check if we are coming back from right subtree
+            while(!st.empty() && temp == st.top()->right){
+                temp = st.top();         # Move up to parent
+                st.pop();                # Pop parent from stack
+                ans.push_back(temp->data); # Process parent node
+            }
+        }
+        else{
+            cur = temp;                  # If right subtree exists, traverse it
+        }
+    }
+
+    if(st.empty()) break;                # Stop when stack becomes empty
+}
+
+# ============================================================
+# DRY RUN STEP-BY-STEP
+# ============================================================
+
+# Initial:
+# cur = 1
+# stack = []
+# ans = []
+
+# ------------------------------------------------------------
+# Step 1: cur = 1
+# push 1 → stack = [1]
+# cur = 3
+
+# Step 2: cur = 3
+# push 3 → stack = [1, 3]
+# cur = 5
+
+# Step 3: cur = 5
+# push 5 → stack = [1, 3, 5]
+# cur = NULL
+
+# ------------------------------------------------------------
+# Step 4: cur == NULL
+# temp = right of 5 = NULL
+# pop 5 → ans = [5]
+# stack = [1, 3]
+
+# Check while:
+# temp(5) == right of 3? → NO (3->right is NULL)
+# exit while
+
+# ------------------------------------------------------------
+# Step 5:
+# cur == NULL
+# temp = right of 3 = NULL
+# pop 3 → ans = [5, 3]
+# stack = [1]
+
+# Check while:
+# temp(3) == right of 1? → NO (right is 2)
+# exit while
+
+# ------------------------------------------------------------
+# Step 6:
+# cur == NULL
+# temp = right of 1 = 2 (exists)
+# cur = 2
+
+# ------------------------------------------------------------
+# Step 7: cur = 2
+# push 2 → stack = [1, 2]
+# cur = NULL
+
+# ------------------------------------------------------------
+# Step 8:
+# temp = right of 2 = NULL
+# pop 2 → ans = [5, 3, 2]
+# stack = [1]
+
+# Check while:
+# temp(2) == right of 1? → YES
+# pop 1 → ans = [5, 3, 2, 1]
+# stack = []
+
+# ------------------------------------------------------------
+# Stack empty → BREAK LOOP
+# ============================================================
+
+# FINAL POSTORDER OUTPUT:
+# ans = [5, 3, 2, 1]
+
+# ============================================================
+# KEY INTUITION (VERY IMPORTANT)
+# ============================================================
+# 1. Go LEFT as deep as possible
+# 2. Process node ONLY when:
+#    - left subtree is done
+#    - right subtree is done
+# 3. temp == st.top()->right tells us:
+#    "We are coming back from right subtree"
+# 4. This perfectly simulates recursive postorder using ONE stack
+# ============================================================
 
 
 
