@@ -1,43 +1,54 @@
 https://leetcode.com/problems/vertical-order-traversal-of-a-binary-tree/submissions/1748094557/
 
-/**
- * Definition for a binary tree node.
- * struct TreeNode {
- *     int val;
- *     TreeNode *left;
- *     TreeNode *right;
- *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
- *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
- *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
- * };
- */
+# ================= ALGORITHM (6–7 lines, easy) =================
+# 1) Vertical traversal groups nodes column-wise from left to right.
+# 2) Use BFS to visit nodes level by level so top nodes are processed first.
+# 3) Assign coordinates: x = row (depth), y = column (horizontal distance).
+# 4) Store nodes in a nested map: column → row → sorted values.
+# 5) Multiset is used to keep nodes sorted when same row & column overlap.
+# 6) Traverse the map from leftmost column to rightmost.
+# 7) Collect values column-wise to form the final answer.
+
+# ================= FULL CODE WITH LINE-BY-LINE COMMENTS =================
+
 class Solution {
 public:
-    vector<vector<int>> verticalTraversal(TreeNode* root) {
-        vector<vector<int>> ans;
-        if(root==NULL)return ans;
-        queue<pair<TreeNode*,pair<int,int>>> q; //node val,x,y
-        map<int,map<int,multiset<int>>> mp; // y<x,values>
-        q.push({root,{0,0}});
-        while(!q.empty()){
-            auto top = q.front(); q.pop();
-            TreeNode* cur = top.first;
-            int x = top.second.first;
-            int y = top.second.second;
-            mp[y][x].insert(cur->val);
-            if(cur->left)q.push({cur->left,{x+1,y-1}});
-            if(cur->right)q.push({cur->right,{x+1,y+1}});
+    vector<vector<int>> verticalTraversal(TreeNode* root) {    // main function for vertical traversal
+        vector<vector<int>> ans;                               // final result container
+        if(root == NULL) return ans;                           // if tree is empty, return empty result
+
+        queue<pair<TreeNode*, pair<int,int>>> q;               // BFS queue: node + (row=x, col=y)
+        map<int, map<int, multiset<int>>> mp;                  // col -> row -> sorted node values
+
+        q.push({root, {0, 0}});                                // start BFS with root at (0,0)
+
+        while(!q.empty()) {                                    // BFS traversal
+            auto top = q.front(); q.pop();                     // get front element from queue
+            TreeNode* cur = top.first;                         // current node
+            int x = top.second.first;                          // row (depth)
+            int y = top.second.second;                         // column (vertical index)
+
+            mp[y][x].insert(cur->val);                         // store value at its column & row
+
+            if(cur->left)                                     // if left child exists
+                q.push({cur->left, {x+1, y-1}});               // move to next row, left column
+
+            if(cur->right)                                    // if right child exists
+                q.push({cur->right, {x+1, y+1}});              // move to next row, right column
         }
-        for(auto it = mp.begin() ; it!= mp.end() ; it++){
-            vector<int> temp;
-            for(auto it1 = it->second.begin() ; it1!=it->second.end() ; it1++){
-                for(auto it2=it1->second.begin() ; it2!=it1->second.end() ; it2++){
-                    temp.push_back(*it2);
+
+        for(auto it = mp.begin(); it != mp.end(); it++) {      // traverse columns left to right
+            vector<int> temp;                                  // stores one vertical column
+            for(auto it1 = it->second.begin(); it1 != it->second.end(); it1++) { // rows top to bottom
+                for(auto it2 = it1->second.begin(); it2 != it1->second.end(); it2++) {
+                    temp.push_back(*it2);                      // add sorted node values
                 }
             }
-            ans.push_back(temp);
+            ans.push_back(temp);                               // add column to final answer
         }
-        return ans;
+
+        return ans;                                            // return vertical traversal
     }
 };
+
 
