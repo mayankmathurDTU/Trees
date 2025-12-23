@@ -1,43 +1,45 @@
 https://www.geeksforgeeks.org/problems/top-view-of-binary-tree/1
 
-/*
-struct Node
-{
-    int data;
-    Node* left;
-    Node* right;
-};
-*/
+# ================= ALGORITHM (6–7 lines, simple) =================
+# 1) Top view means the first node visible at each vertical distance from root.
+# 2) Do a level-order (BFS) traversal so upper nodes are seen before lower ones.
+# 3) Assign a vertical index (0 for root, -1 for left, +1 for right).
+# 4) Use a map to store the first node seen at each vertical index.
+# 5) If a vertical index already exists, ignore later nodes at that index.
+# 6) Traverse left to right using the ordered map.
+# 7) Collect the stored values as the top view.
+
+# ================= FULL CODE WITH LINE-BY-LINE COMMENTS =================
+
 class Solution {
   public:
-    // Function to return a list of nodes visible from the top view
-    // from left to right in Binary Tree.
-    vector<int> topView(Node *root) {
-        vector<int> ans;
-        if(root==NULL)return ans;
-        ans.push_back(root->data);
-        if(root->left==NULL && root->right==NULL)return ans;
-        ans.pop_back();
+    vector<int> topView(Node *root) {             // function to compute top view
+        vector<int> ans;                          // stores final answer
+        if(root == NULL) return ans;              // if tree is empty, return empty list
 
-        queue<pair<Node*,int>> q;
-        q.push({root,0});
-        map<int,int>mp;
-        while(!q.empty()){
-            auto top = q.front(); q.pop();
-            Node* cur = top.first;
-            int ver = top.second;
-            if(mp.count(ver)==0)mp[ver]=cur->data;
-            if(cur->left){
-                q.push({cur->left,ver-1});
-            }
-            if(cur->right){
-                q.push({cur->right,ver+1});
-            }
-            
+        queue<pair<Node*, int>> q;                // queue for BFS (node, vertical index)
+        map<int, int> mp;                         // map to store first node at each vertical
+
+        q.push({root, 0});                        // start BFS with root at vertical 0
+
+        while(!q.empty()) {                       // continue until all nodes are processed
+            auto top = q.front(); q.pop();        // get front element from queue
+            Node* cur = top.first;                // current tree node
+            int ver = top.second;                 // its vertical distance
+
+            if(mp.count(ver) == 0)                // if this vertical is seen first time
+                mp[ver] = cur->data;              // store node data for top view
+
+            if(cur->left)                         // if left child exists
+                q.push({cur->left, ver - 1});     // push left child with vertical - 1
+
+            if(cur->right)                        // if right child exists
+                q.push({cur->right, ver + 1});    // push right child with vertical + 1
         }
-        for(auto it=mp.begin() ; it!= mp.end() ; it++){
-            ans.push_back(it->second);
-        }
-        return ans;
+
+        for(auto it = mp.begin(); it != mp.end(); it++) // traverse map from leftmost to rightmost
+            ans.push_back(it->second);             // add stored top-view nodes to answer
+
+        return ans;                                // return final top view
     }
 };
