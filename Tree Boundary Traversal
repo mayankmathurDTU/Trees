@@ -1,65 +1,70 @@
 https://www.geeksforgeeks.org/problems/boundary-traversal-of-binary-tree/1
 
-/*
-// Tree Node
-class Node {
-  public:
-    int data;
-    Node* left;
-    Node* right;
+# ================= ALGORITHM (6–7 lines, clear) =================
+# 1) Boundary traversal prints nodes on the boundary in anti-clockwise order.
+# 2) First add the root (only once).
+# 3) Traverse the left boundary (excluding leaf nodes).
+# 4) Traverse all leaf nodes from left to right.
+# 5) Traverse the right boundary (excluding leaf nodes).
+# 6) Right boundary is collected bottom-up using a stack.
+# 7) Combine all parts to form the final boundary traversal.
 
-    // Constructor to initialize a new node
-    Node(int val) {
-        data = val;
-        left = NULL;
-        right = NULL;
-    }
-};
-*/
+# ================= FULL CODE WITH LINE-BY-LINE COMMENTS =================
 
 class Solution {
   public:
-    void leftB(Node *root, vector<int>& ans){
-        if(root==NULL)return;
-        if(root->left == NULL && root->right == NULL)return;
-        ans.push_back(root->data);
-        if(root->left)leftB(root->left,ans);
-        else leftB(root->right,ans);
+    void leftB(Node *root, vector<int>& ans){        // traverse left boundary
+        if(root == NULL) return;                     // stop if node is null
+        if(root->left == NULL && root->right == NULL) return; // skip leaf nodes
+        ans.push_back(root->data);                   // add current boundary node
+        if(root->left)                               // prefer moving left
+            leftB(root->left, ans);                  // go to left child
+        else
+            leftB(root->right, ans);                 // otherwise go to right child
     }
-    void leaf(Node *root, vector<int>& ans){
-        if(root==NULL)return;
-        if(root->left == NULL && root->right == NULL){
-            ans.push_back(root->data);
-            return;
+
+    void leaf(Node *root, vector<int>& ans){         // traverse and collect leaf nodes
+        if(root == NULL) return;                     // stop if node is null
+        if(root->left == NULL && root->right == NULL){ // if leaf node
+            ans.push_back(root->data);               // add leaf node data
+            return;                                  // return after adding
         }
-        leaf(root->left,ans);
-        leaf(root->right,ans);
+        leaf(root->left, ans);                       // traverse left subtree
+        leaf(root->right, ans);                      // traverse right subtree
     }
-    void rightB(Node *root, vector<int>& ans,stack<Node*>& st){
-        if(root==NULL)return;
-        if(root->left == NULL && root->right == NULL)return;
-        st.push(root);
-        if(root->right)rightB(root->right,ans,st);
-        else rightB(root->left,ans,st);
+
+    void rightB(Node *root, vector<int>& ans, stack<Node*>& st){ // traverse right boundary
+        if(root == NULL) return;                     // stop if node is null
+        if(root->left == NULL && root->right == NULL) return; // skip leaf nodes
+        st.push(root);                               // push node to stack for reverse order
+        if(root->right)                              // prefer moving right
+            rightB(root->right, ans, st);            // go to right child
+        else
+            rightB(root->left, ans, st);             // otherwise go to left child
     }
-    vector<int> boundaryTraversal(Node *root) {
-        vector<int> ans;
-        if(root==NULL)return ans;
-        ans.push_back(root->data);
-        if(root->left == NULL && root->right == NULL)return ans;
-        leftB(root->left,ans);
-        leaf(root,ans);
-        stack<Node*> st;
-        rightB(root->right,ans,st);
-        while(!st.empty()){
-            ans.push_back(st.top()->data);
-            st.pop();
+
+    vector<int> boundaryTraversal(Node *root) {      // main boundary traversal function
+        vector<int> ans;                             // stores final boundary traversal
+        if(root == NULL) return ans;                 // if tree is empty, return empty
+
+        ans.push_back(root->data);                   // add root node first
+        if(root->left == NULL && root->right == NULL) // if root is the only node
+            return ans;                              // return immediately
+
+        leftB(root->left, ans);                      // collect left boundary
+        leaf(root, ans);                             // collect all leaf nodes
+
+        stack<Node*> st;                             // stack to reverse right boundary order
+        rightB(root->right, ans, st);                // collect right boundary in stack
+
+        while(!st.empty()){                          // add right boundary in reverse order
+            ans.push_back(st.top()->data);           // add top stack element
+            st.pop();                                // remove added element
         }
-        return ans;
+
+        return ans;                                  // return complete boundary traversal
     }
 };
-
-
 
 
 
