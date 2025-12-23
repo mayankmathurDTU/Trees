@@ -1,52 +1,66 @@
 https://leetcode.com/problems/recover-binary-search-tree/description/
 
-https://leetcode.com/problems/recover-binary-search-tree/description/
+# ================= ALGORITHM (6–7 lines, concise) =================
+# 1) In a valid BST, inorder traversal gives a sorted sequence.
+# 2) If two nodes are swapped, this sorted order breaks at one or two places.
+# 3) Traverse the tree using inorder and keep track of the previous node.
+# 4) On detecting prev->val > current->val, mark the misplaced nodes.
+# 5) First violation gives (first, mid); second violation gives (second).
+# 6) If only one violation exists, swap first and mid.
+# 7) If two violations exist, swap first and second.
 
-/**
- * Definition for a binary tree node.
- * struct TreeNode {
- *     int val;
- *     TreeNode *left;
- *     TreeNode *right;
- *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
- *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
- *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
- * };
- */
-class Solution {
+# ================= FULL CODE WITH LINE-BY-LINE COMMENTS =================
+
+# Definition of binary tree node
+struct TreeNode {                          // structure representing each tree node
+    int val;                               // value stored in the node
+    TreeNode *left;                        // pointer to left child
+    TreeNode *right;                       // pointer to right child
+    TreeNode() : val(0), left(nullptr), right(nullptr) {}                 // default constructor
+    TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}             // constructor with value
+    TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {} // full constructor
+};
+
+class Solution {                           // solution class as required by LeetCode
 public:
-    TreeNode* first = NULL;
-    TreeNode* mid = NULL;
-    TreeNode* second = NULL;
-    TreeNode* prev=NULL;
-    void inOrder(TreeNode* root){
-        if(root==NULL)return;
-        inOrder(root->left);
-        if(prev!=NULL){
-            if(root->val < prev->val){
-                if(first==NULL){  
-                    first = prev; 
-                    mid= root;
-                }
-                else{
-                    second = root;
+    TreeNode* first = NULL;                // pointer to first incorrect node
+    TreeNode* mid = NULL;                  // pointer to middle node (used when nodes are adjacent)
+    TreeNode* second = NULL;               // pointer to second incorrect node
+    TreeNode* prev = NULL;                 // pointer to previously visited node in inorder
+
+    void inOrder(TreeNode* root) {          // helper function for inorder traversal
+        if (root == NULL) return;           // base case: empty subtree
+
+        inOrder(root->left);                // recursively visit left subtree
+
+        if (prev != NULL) {                 // ensure previous node exists
+            if (root->val < prev->val) {    // violation of BST property detected
+                if (first == NULL) {        // first violation found
+                    first = prev;           // store previous node as first
+                    mid = root;             // store current node as mid
+                } else {                    // second violation found
+                    second = root;          // store current node as second
                 }
             }
         }
-        prev=root;
-        inOrder(root->right);
+
+        prev = root;                        // update previous node to current
+
+        inOrder(root->right);               // recursively visit right subtree
     }
-    void recoverTree(TreeNode* root) {
-        inOrder(root);
-        if(second == NULL){
-            int temp = first->val;
-            first->val=mid->val;
-            mid->val=temp;
-        }
-        else{
-            int temp = first->val;
-            first->val=second->val;
-            second->val=temp;
+
+    void recoverTree(TreeNode* root) {      // main function to fix BST
+        inOrder(root);                      // perform inorder traversal to detect errors
+
+        if (second == NULL) {               // case when swapped nodes are adjacent
+            int temp = first->val;          // store first value temporarily
+            first->val = mid->val;          // swap first and mid values
+            mid->val = temp;                // complete swap
+        } else {                            // case when swapped nodes are not adjacent
+            int temp = first->val;          // store first value temporarily
+            first->val = second->val;       // swap first and second values
+            second->val = temp;             // complete swap
         }
     }
 };
+
